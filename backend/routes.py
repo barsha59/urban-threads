@@ -545,3 +545,99 @@ def debug_info():
         "total_orders": Order.query.count(),
         "environment": "production"
     })
+
+# for web 2
+@app.route('/api/admin/add-sample-products', methods=['POST'])
+def add_sample_products():
+    try:
+        # Sample product data
+        sample_products = [
+            {
+                'name': 'Urban Threads Premium T-Shirt',
+                'price': 24.99,
+                'description': '100% Cotton, comfortable fit',
+                'image_url': 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+                'category': 'Clothing',
+                'stock': 100
+            },
+            {
+                'name': 'Designer Denim Jeans',
+                'price': 59.99,
+                'description': 'Slim fit, stretch denim',
+                'image_url': 'https://images.unsplash.com/photo-1542272604-787c3835535d?w-400&h=400&fit=crop',
+                'category': 'Clothing',
+                'stock': 50
+            },
+            {
+                'name': 'Summer Floral Dress',
+                'price': 39.99,
+                'description': 'Lightweight floral pattern dress',
+                'image_url': 'https://images.unsplash.com/photo-1567095761054-7a02e69e5c43?w=400&h=400&fit=crop',
+                'category': 'Clothing',
+                'stock': 30
+            },
+            {
+                'name': 'Leather Jacket',
+                'price': 89.99,
+                'description': 'Genuine leather, classic style',
+                'image_url': 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop',
+                'category': 'Clothing',
+                'stock': 20
+            },
+            {
+                'name': 'Casual Sneakers',
+                'price': 49.99,
+                'description': 'Comfortable everyday shoes',
+                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop',
+                'category': 'Footwear',
+                'stock': 75
+            },
+            {
+                'name': 'Winter Beanie',
+                'price': 19.99,
+                'description': 'Warm woolen beanie',
+                'image_url': 'https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?w=400&h=400&fit=crop',
+                'category': 'Accessories',
+                'stock': 150
+            }
+        ]
+        
+        # Get database connection
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        added_count = 0
+        
+        for product in sample_products:
+            # Check if product already exists
+            cur.execute('SELECT id FROM products WHERE name = %s', (product['name'],))
+            if not cur.fetchone():
+                # Insert new product
+                cur.execute('''
+                    INSERT INTO products (name, price, description, image_url, category, stock)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                ''', (
+                    product['name'],
+                    product['price'],
+                    product['description'],
+                    product['image_url'],
+                    product['category'],
+                    product['stock']
+                ))
+                added_count += 1
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({
+            "success": True,
+            "message": f"Added {added_count} new sample products",
+            "total_sample_products": len(sample_products)
+        }), 201
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
