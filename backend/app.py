@@ -15,8 +15,10 @@ database_url = os.environ.get('DATABASE_URL')
 if database_url:
     # Render provides 'postgres://' but SQLAlchemy needs 'postgresql://'
     if database_url.startswith('postgres://'):
-        database_url = database_url.replace('postgres://', 'postgresql://', 1)
-    
+        database_url = database_url.replace('postgres://', 'postgresql+pg8000://', 1)
+    else:
+        # Ensure we're using pg8000 driver
+        database_url = database_url.replace('postgresql://', 'postgresql+pg8000://', 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     print("✅ Using PostgreSQL database from Render")
 else:
