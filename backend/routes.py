@@ -4,6 +4,7 @@ from extensions import db
 from models import Product, Order, Review, User, Wishlist 
 import stripe
 import os
+import traceback
 
 print("✅ routes.py loaded - Fashion Store")
 
@@ -573,3 +574,29 @@ def debug_info():
         "total_orders": Order.query.count(),
         "environment": "production"
     })
+# ======================
+# DATABASE INITIALIZATION
+# ======================
+
+@routes_bp.route('/api/init-db')
+def init_database():
+    """Initialize/Recreate all database tables"""
+    try:
+        from extensions import db
+        
+        # Drop all tables (for development/testing only!)
+        # db.drop_all()
+        
+        # Create all tables
+        db.create_all()
+        
+        return jsonify({
+            "success": True,
+            "message": "Database tables created successfully"
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc() if traceback else None
+        }), 500
