@@ -91,5 +91,25 @@ sample_products = [
     }
 ]
 
+def seed_database():
+    with app.app_context():
+        db.create_all()  # Create tables if not exist
+        for prod in sample_products:
+            existing = Product.query.filter_by(name=prod['name']).first()
+            if not existing:
+                new_prod = Product(
+                    name=prod['name'],
+                    price=prod['price'],
+                    rating=prod['rating'],
+                    review_count=prod['review_count'],
+                    category=prod['category'],
+                    stock=prod['stock'],
+                    image_url=prod['image_url'],
+                    description=prod['description']
+                )
+                db.session.add(new_prod)
+        db.session.commit()
+        print("✅ Fashion products inserted into database!")
+
 if __name__ == "__main__":
     seed_database()
