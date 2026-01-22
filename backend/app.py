@@ -4,7 +4,14 @@ from flask_cors import CORS
 from extensions import db
 from routes import routes_bp
 import os
-import models  # 👈 IMPORTANT: ensures models are registered
+import models  
+from dotenv import load_dotenv
+
+load_dotenv()
+
+import stripe
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+print("Stripe key loaded:", stripe.api_key)  # <--- for debug
 
 app = Flask(__name__)
 CORS(app)
@@ -52,4 +59,4 @@ def home():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))  # Uses PORT from environment or defaults to 5001
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)
