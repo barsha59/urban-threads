@@ -62,3 +62,5 @@ logs/
 temp/
 tmp/
 .env
+
+stripe-secrets.txt
