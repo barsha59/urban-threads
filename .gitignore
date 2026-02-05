@@ -1,66 +1,73 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-venv/
-.venv/
-env/
-.env
-.venv
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Database
-instance/
-*.db
-*.sqlite
-*.sqlite3
 
 # Build
-build/
-dist/
-*.egg-info/
-
+# Database
 # Environment
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
+# Environment files
+# IDE
 # Logs
-logs/
-*.log
-
+# Node
+# OS
+# Python
+# Secrets and keys
 # Temporary
+*.cert
+*.crt
+*.db
+*.egg-info/
+*.env
+*.key
+*.log
+*.pem
+*.py[cod]
+*.pyc
+*.pyd
+*.pyo
+*.secret
+*.so
+*.sqlite
+*.sqlite3
+*.swo
+*.swp
+.DS_Store
+.DS_Store?
+.Python
+.Spotlight-V100
+.Trashes
+._*
+.env
+.env*
+.env.*.local
+.env.development.local
+.env.local
+.env.production.local
+.env.test.local
+.idea/
+.pnpm-debug.log*
+.venv
+.venv/
+.vscode/
+ENV/
+Thumbs.db
+__pycache__/
+backend/.env
+backend/stripe-secrets.txt
+build/
+credentials/
+dist/
+ehthumbs.db
+env.bak/
+env/
+instance/
+logs/
+node_modules/
+npm-debug.log*
+secrets*.txt
+secrets/
+stripe-secrets-local.txt
+stripe-secrets.txt
 temp/
 tmp/
-.env
-
-stripe-secrets.txt
+venv.bak/
+venv/
+yarn-debug.log*
+yarn-error.log*
