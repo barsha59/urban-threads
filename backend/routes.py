@@ -11,12 +11,8 @@ from werkzeug.security import generate_password_hash
 print("✅ routes.py loaded - Fashion Store")
 
 routes_bp = Blueprint("routes", __name__)
-
-# Stripe test secret key
-stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
-print("Stripe API Key loaded?", stripe.api_key is not None)
-
-
+# Stripe secret key
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 
 # ----------------------
 # USER AUTHENTICATION
