@@ -14,7 +14,7 @@ stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 print("Stripe key loaded:", stripe.api_key[:10] + "..." if stripe.api_key else "Not found")
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # ---- SIMPLE SQLITE DATABASE CONFIGURATION ----
 basedir = os.path.abspath(os.path.dirname(__file__))
