@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    container_name: urbanthreads-backend
+    restart: always
+    ports:                     
+      - "5001:5001"                # backend port for urban-threads
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY}   
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+    volumes:
+      - ./backend:/app
+      - ./backend/database.db:/app/database.db   # persist SQLite DB
+
+  frontend:
+    build: ./frontend
+    container_name: urbanthreads-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
