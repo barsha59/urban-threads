@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import API_URL from "../config";
+import { API_URL, STRIPE_PUBLISHABLE_KEY } from '../config';
 
 // Stripe public key
 const stripePromise = loadStripe(

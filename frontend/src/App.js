@@ -16,17 +16,27 @@ function App() {
   const [user, setUser] = useState(null);
 
   // Check for existing user on load
-  useEffect(() => {
+useEffect(() => {
+  try {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    if (storedUser && storedUser !== "undefined") {
       setUser(JSON.parse(storedUser));
     }
-    
+  } catch (error) {
+    console.error("Error parsing user from localStorage:", error);
+    localStorage.removeItem("user");
+  }
+
+  try {
     const storedCart = localStorage.getItem("cart");
-    if (storedCart) {
+    if (storedCart && storedCart !== "undefined") {
       setCart(JSON.parse(storedCart));
     }
-  }, []);
+  } catch (error) {
+    console.error("Error parsing cart from localStorage:", error);
+    localStorage.removeItem("cart");
+  }
+}, []);
 
   // Add product to cart
   const addToCart = (product) => {

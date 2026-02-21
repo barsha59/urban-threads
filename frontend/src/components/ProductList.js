@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import API_URL from "../config"; // Your backend URL
+import { API_URL } from '../config';  // ✅ correct for named export
 
 const ProductList = ({ addToCart }) => {
   const [products, setProducts] = useState([]);

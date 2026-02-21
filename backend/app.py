@@ -14,8 +14,7 @@ stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 print("Stripe key loaded:", stripe.api_key[:10] + "..." if stripe.api_key else "Not found")
 
 app = Flask(__name__)
-CORS(app)
-
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
 # ---- SIMPLE SQLITE DATABASE CONFIGURATION ----
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -46,6 +45,12 @@ app.register_blueprint(routes_bp)
 @app.route("/")
 def home():
     return {"message": "Urban-Threads Website 2 API Running - Local Development"}
+
+
+@app.route("/health")
+def health():
+    return {"status": "ok"}
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))

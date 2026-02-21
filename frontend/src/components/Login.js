@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import API_URL from "../config";
+import { API_URL } from '../config';  // ✅ correct for named export
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState("");

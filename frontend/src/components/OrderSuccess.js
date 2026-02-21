@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import API_URL from "../config";
+import { API_URL } from '../config';  // ✅ correct for named export
 
 const OrderSuccess = () => {
   const navigate = useNavigate();

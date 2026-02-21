@@ -108,81 +108,127 @@ def get_product(product_id):
         "description": product.description
     })
 
-# ----------------------
-# ADD SAMPLE PRODUCTS (UPDATED FOR WORKING IMAGES)
-# ----------------------
-@routes_bp.route('/api/add-sample-products')
-def add_sample_products():
-    """Add sample fashion products to database with working images"""
+
+
+@routes_bp.route("/products/search", methods=["GET"])
+def search_products():
+    """
+    Search products by query string 'q' and optional 'limit'
+    Example: /products/search?q=jacket&limit=20
+    """
+    query = request.args.get("q", "").strip()
+    limit = int(request.args.get("limit", 20))
+
+    if not query:
+        return jsonify({"products": []}), 200
+
+    # Simple search: name or description contains query (case-insensitive)
+    products = (
+        Product.query
+        .filter(
+            (Product.name.ilike(f"%{query}%")) |
+            (Product.description.ilike(f"%{query}%"))
+        )
+        .limit(limit)
+        .all()
+    )
+
+    results = []
+    for p in products:
+        results.append({
+            "id": p.id,
+            "name": p.name,
+            "price": float(p.price),
+            "rating": float(getattr(p, "rating", 0)),
+            "review_count": int(getattr(p, "review_count", 0)),
+            "category": p.category or "Unknown",
+            "stock": int(getattr(p, "stock", 0)),
+            "image_url": p.image_url or "",
+            "description": p.description or "",
+            "brand": getattr(p, "brand", ""),
+            "url": getattr(p, "url", ""),
+        })
+
+    return jsonify({"products": results}), 200
+
+@routes_bp.route("/api/orders", methods=["POST", "OPTIONS"])
+def create_order():
+    if request.method == "OPTIONS":
+        return "", 200
+
     try:
-        current_count = Product.query.count()
-        if current_count > 0:
-            return jsonify({
-                "status": "info",
-                "message": f"Already have {current_count} products. No need to add samples."
-            })
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
 
-        sample_products = [
-            {"name": "Urban Threads Premium T-Shirt", "price": 24.99, "rating": 4.5, "review_count": 128,
-             "category": "T-Shirts", "stock": 100,
-             "image_url": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w-400-h-400",
-             "description": "100% Cotton, comfortable fit, modern design"},
-            {"name": "Designer Denim Jeans", "price": 59.99, "rating": 4.3, "review_count": 89,
-             "category": "Jeans", "stock": 50,
-             "image_url": "https://images.unsplash.com/photo-1610945264815-d3e49530c1a0?w-400-h-400",
-             "description": "Slim fit, stretch denim, premium quality"},
-            {"name": "Summer Floral Dress", "price": 39.99, "rating": 4.7, "review_count": 203,
-             "category": "Dresses", "stock": 30,
-             "image_url": "https://images.unsplash.com/photo-1587760489475-8f6c6c876d64?w-400-h-400",
-             "description": "Lightweight floral pattern, perfect for summer"},
-            {"name": "Classic Leather Jacket", "price": 89.99, "rating": 4.6, "review_count": 67,
-             "category": "Jackets", "stock": 20,
-             "image_url": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w-400-h-400",
-             "description": "Genuine leather, timeless style"},
-            {"name": "Casual Sneakers", "price": 49.99, "rating": 4.4, "review_count": 156,
-             "category": "Footwear", "stock": 75,
-             "image_url": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w-400-h-400",
-             "description": "Comfortable everyday shoes, versatile style"},
-            {"name": "Winter Beanie", "price": 19.99, "rating": 4.2, "review_count": 45,
-             "category": "Accessories", "stock": 150,
-             "image_url": "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?w-400-h-400",
-             "description": "Warm woolen beanie, multiple colors available"},
-            {"name": "Formal Blazer", "price": 79.99, "rating": 4.5, "review_count": 92,
-             "category": "Suits & Blazers", "stock": 25,
-             "image_url": "https://images.unsplash.com/photo-1594938374182-2510c5c63f8a?w-400-h-400",
-             "description": "Professional look, perfect for office wear"},
-            {"name": "Yoga Leggings", "price": 34.99, "rating": 4.8, "review_count": 210,
-             "category": "Activewear", "stock": 60,
-             "image_url": "https://images.unsplash.com/photo-1587563871167-1ee9c731c62a?w-400-h-400",
-             "description": "High-waisted, moisture-wicking, comfortable fit"}
-        ]
+        # Create a simple order record (even with only first product)
+        cart_items = data.get("cart", [])
+        if not cart_items:
+            return jsonify({"error": "Cart is empty"}), 400
 
-        added_count = 0
-        for prod_data in sample_products:
-            product = Product(
-                name=prod_data["name"],
-                price=prod_data["price"],
-                rating=prod_data["rating"],
-                review_count=prod_data["review_count"],
-                category=prod_data["category"],
-                stock=prod_data["stock"],
-                image_url=prod_data["image_url"],
-                description=prod_data["description"]
-            )
-            db.session.add(product)
-            added_count += 1
-
+        product_id = cart_items[0]["product_id"]  # take first product
+        order = Order(
+            product_id=product_id,
+            customer_name=data.get("customer_name"),
+            address=data.get("address"),
+            phone=data.get("phone")
+        )
+        db.session.add(order)
         db.session.commit()
 
+        # Calculate total
+        subtotal = sum(Product.query.get(item["product_id"]).price * item["quantity"] for item in cart_items)
+        tax = subtotal * 0.18
+        total_amount = subtotal + tax
+
+        # Stripe PaymentIntent
+        intent = stripe.PaymentIntent.create(
+            amount=int(total_amount * 100),  # in cents
+            currency="usd",
+            payment_method_types=["card"]
+        )
+
         return jsonify({
-            "status": "success",
-            "message": f"Added {added_count} fashion products to database",
-            "products_added": [p["name"] for p in sample_products]
+            "order_ids": [order.id],   # <-- return as array
+            "client_secret": intent.client_secret
         })
 
     except Exception as e:
-        return jsonify({
-            "status": "error",
-            "error": str(e),
-            "traceback": traceback.format_exc() if traceback else None
-        }), 500
+        print("🔥 /api/orders error:", e)
+        return jsonify({"error": str(e)}), 500
+
+@routes_bp.route("/api/pay", methods=["POST", "OPTIONS"])
+def handle_pay():
+    if request.method == "OPTIONS":
+        return "", 200
+
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        intent = stripe.PaymentIntent.create(
+            amount=int(data.get("amount", 1000)),  # in cents
+            currency="usd",
+            payment_method_types=["card"]
+        )
+
+        return jsonify({"client_secret": intent.client_secret})
+    except Exception as e:
+        print("🔥 /api/pay error:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+
+# ----------------------
+# CONFIRM ORDER PAYMENT
+# ----------------------
+@routes_bp.route('/api/orders/<int:order_id>/pay', methods=['POST'])
+def confirm_payment(order_id):
+    order = Order.query.get(order_id)
+    if not order:
+        return jsonify({"error": "Order not found"}), 404
+
+    order.status = "Paid"
+    db.session.commit()
+    return jsonify({"message": f"Order {order_id} marked as Paid"})
