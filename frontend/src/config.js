@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5001"; // ✅ correct for local dev
+const API_URL = "http://44.219.130.221:5001";
 const STRIPE_PUBLISHABLE_KEY =
   "pk_test_51Sl1TM2YdULA0kvG2JENo4pXukqssFkAHNfEYoeqzdGrkIxBLJh8YirmBdusf6yaCJxQXWq1W7usBupkDNupbPHf00AVabIsFL";
 
