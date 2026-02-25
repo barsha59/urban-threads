@@ -7,6 +7,26 @@ import os
 import traceback
 from werkzeug.security import generate_password_hash
 
+# ----------------------
+# API KEY AUTH MIDDLEWARE
+# ----------------------
+from functools import wraps
+
+API_KEY = os.environ.get("API_KEY")  # should be set in your .env / docker-compose
+print("Loaded API_KEY:", API_KEY) 
+
+
+def require_api_key(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        key = request.headers.get("x-api-key")
+        if not key or key != API_KEY:
+            return jsonify({"error": "Unauthorized"}), 401
+        return f(*args, **kwargs)
+    return decorated
+
+# -------------------------------------------------------
+
 
 print("✅ routes.py loaded - Fashion Store")
 
@@ -89,6 +109,40 @@ def get_products():
         }
         for p in products
     ])
+
+
+
+# ----------------------
+# SECURE GET PRODUCTS (API KEY REQUIRED)
+# ----------------------
+@routes_bp.route('/api/secure/products', methods=['GET'])
+@require_api_key
+def get_secure_products():
+    sort_by = request.args.get('sort')
+    if sort_by == "price":
+        products = Product.query.order_by(Product.price.asc()).all()
+    elif sort_by == "rating":
+        products = Product.query.order_by(Product.rating.desc()).all()
+    else:
+        products = Product.query.all()
+
+    return jsonify([
+        {
+            "id": p.id,
+            "name": p.name,
+            "price": p.price,
+            "rating": p.rating,
+            "reviews": p.review_count,
+            "category": p.category,
+            "stock": p.stock,
+            "image": p.image_url,
+            "description": p.description
+        }
+        for p in products
+    ])
+# ---------------------------------------------------------------------------------------------------
+
+
 
 @routes_bp.route('/api/products/<int:product_id>', methods=['GET'])
 def get_product(product_id):
